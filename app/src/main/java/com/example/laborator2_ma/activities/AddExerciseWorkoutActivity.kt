@@ -44,7 +44,6 @@ class AddExerciseWorkoutActivity : AppCompatActivity() {
             val numberOfReps = binding.addWorkoutExerciseNumberOfRepsEditText.text.toString().toInt()
             val weight = binding.addWorkoutExerciseWeightEditText.text.toString().toFloat()
 
-            // TODO: Add validation to this
             val exerciseType = enumValueOf<WorkoutExerciseType>(binding.addWorkoutExerciseTypeEditText.text.toString().uppercase())
 
             val workoutExercise = WorkoutExercise(name, numberOfReps, numberOfSets, weight, exerciseType)

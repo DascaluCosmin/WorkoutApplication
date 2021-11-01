@@ -131,8 +131,8 @@
 
         <ImageView
             android:id="@+id/modifyButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="35dp"
+            android:layout_height="33dp"
             android:layout_marginStart="9dp"
             app:layout_constraintBottom_toBottomOf="@+id/deleteButton"
             app:layout_constraintEnd_toEndOf="parent"
@@ -140,7 +140,7 @@
             app:layout_constraintStart_toEndOf="@+id/deleteButton"
             app:layout_constraintTop_toTopOf="@+id/deleteButton"
             app:layout_constraintVertical_bias="0.0"
-            app:srcCompat="@android:drawable/ic_media_play" />
+            app:srcCompat="@android:drawable/ic_menu_edit" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

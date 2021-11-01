@@ -177,6 +177,7 @@ class WorkoutExerciseActivity : AppCompatActivity() {
                 workoutExercises.removeAt(position)
                 workoutExercisesForSet.removeAt(position)
                 notifyDataSetChanged()
+                toast("Workout Exercise deleted successfully")
             }
             holder.binding.modifyButton.setOnClickListener {
                 logd("Pressed on modify for $position and workout set $currentWorkoutSetId")

@@ -13,6 +13,7 @@ import com.example.laborator2_ma.databinding.WorkoutSetBinding
 import com.example.laborator2_ma.dependencyinjection.ApplicationContainer
 import com.example.laborator2_ma.domain.WorkoutSet
 import com.example.laborator2_ma.utils.logd
+import com.example.laborator2_ma.utils.toast
 import java.time.LocalDate
 
 class MainActivity : AppCompatActivity() {
@@ -101,6 +102,7 @@ class MainActivity : AppCompatActivity() {
                 workoutSets.removeAt(position)
                 ApplicationContainer.workoutSetRepository.remove(position)
                 notifyDataSetChanged()
+                toast("Workout Set deleted successfully")
             }
             holder.binding.workoutSetCardView.setOnClickListener {
                 logd("Pressed on card view for position $position")
