@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">WorkoutApp</string>
+    <string name="workoutSetName">Leg day (intensive)</string>
+    <string name="addButtonText">Add</string>
+    <string name="modifyButtonText">Modify</string>
+    <string name="workoutExerciseName">Leg Extension Curl</string>
+    <string name="workoutExerciseNumberOfSets">4</string>
+    <string name="workoutExerciseNumberOfSetsLabel">sets</string>
+    <string name="workoutExerciseNumberOfReps">20</string>
+    <string name="workoutExerciseNumberOfRepsLabel">reps</string>
+    <string name="workoutExerciseWeight">24</string>
+    <string name="workoutExerciseWeightUnit">kg</string>
+    <string name="workoutExerciseType">Leg Isolation</string>
+    <string name="exerciseTextLabel">Exercise</string>
+    <string name="exerciseNameLabel">Name</string>
+    <string name="exerciseNumberOfSetsLabel">Number of sets</string>
+    <string name="exerciseNumberOfRepsLabel">Number of reps</string>
+    <string name="exerciseWeightLabel">Weight</string>
+    <string name="exerciseTypeLabel">Type</string>
+</resources>
