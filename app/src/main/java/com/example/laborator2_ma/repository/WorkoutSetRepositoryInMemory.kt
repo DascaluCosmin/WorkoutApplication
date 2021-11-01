@@ -30,8 +30,9 @@ class WorkoutSetRepositoryInMemory : WorkoutSetRepository {
         return workoutSets[position]
     }
 
-    override fun add(workoutSet: WorkoutSet) {
+    override fun add(workoutSet: WorkoutSet): Int {
         workoutSets.add(workoutSet)
+        return workoutSets.size - 1
     }
 
     override fun remove(position: Int) {

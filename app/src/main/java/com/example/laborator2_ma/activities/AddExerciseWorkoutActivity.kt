@@ -37,7 +37,7 @@ class AddExerciseWorkoutActivity : AppCompatActivity() {
         binding = AddActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.addButton.setOnClickListener {
+        binding.buttonAddExerciseWorkout.setOnClickListener {
             toast("Exercise has been added successfully!")
             val name = binding.addWorkoutExerciseNameEditText.text.toString()
             val numberOfSets = binding.addWorkoutExerciseNumberOfSetsEditText.text.toString().toInt()

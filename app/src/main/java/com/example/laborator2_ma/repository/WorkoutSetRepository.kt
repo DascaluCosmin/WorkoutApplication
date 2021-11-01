@@ -8,7 +8,7 @@ interface WorkoutSetRepository {
 
     fun findOne(position: Int): WorkoutSet
 
-    fun add(workoutSet: WorkoutSet)
+    fun add(workoutSet: WorkoutSet): Int
 
     fun remove(position: Int)
 }

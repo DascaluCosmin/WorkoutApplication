@@ -3,13 +3,11 @@ package com.example.laborator2_ma.activities
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.laborator2_ma.databinding.ModifyActivityBinding
 import com.example.laborator2_ma.dependencyinjection.ApplicationContainer
 import com.example.laborator2_ma.domain.WorkoutExercise
 import com.example.laborator2_ma.domain.WorkoutExerciseType
-import com.example.laborator2_ma.repository.WorkoutExerciseRepository
 import com.example.laborator2_ma.utils.logd
 import com.example.laborator2_ma.utils.toast
 

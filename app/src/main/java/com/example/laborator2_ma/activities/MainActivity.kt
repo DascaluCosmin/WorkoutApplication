@@ -13,11 +13,15 @@ import com.example.laborator2_ma.databinding.WorkoutSetBinding
 import com.example.laborator2_ma.dependencyinjection.ApplicationContainer
 import com.example.laborator2_ma.domain.WorkoutSet
 import com.example.laborator2_ma.utils.logd
+import java.time.LocalDate
 
 class MainActivity : AppCompatActivity() {
 
     companion object {
         const val MAIN_ACTIVITY_WORKOUT_SET_ID = "id"
+        const val MAIN_ACTIVITY_WORKOUT_SET_NAME = "name"
+        const val MAIN_ACTIVITY_WORKOUT_SET_DATE = "date"
+        const val MAIN_ACTIVITY_CREATE_WORKOUT = "Create Workout"
     }
 
     private lateinit var binding: ActivityMainBinding
@@ -30,7 +34,14 @@ class MainActivity : AppCompatActivity() {
             if (intent != null) {
                 val intentBundle = intent.extras
                 if (intentBundle != null) {
+                    val id = intentBundle.getInt(MAIN_ACTIVITY_WORKOUT_SET_ID)
+                    var name = intentBundle.getString(MAIN_ACTIVITY_WORKOUT_SET_NAME)
+                    if (name == null) {
+                        name = "Unknown name"
+                    }
+                    val createdAt = LocalDate.parse(intentBundle.getString(MAIN_ACTIVITY_WORKOUT_SET_DATE))
 
+                    adapter.addWorkoutSetToList(WorkoutSet(id, name, createdAt, ArrayList()))
                 }
             }
         }
@@ -48,6 +59,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.buttonAddWorkoutSet.setOnClickListener {
             val intent = Intent(this, WorkoutExerciseActivity::class.java)
+            intent.putExtra(MAIN_ACTIVITY_CREATE_WORKOUT, true)
             addWorkoutSetLauncher.launch(intent)
         }
 
@@ -58,6 +70,12 @@ class MainActivity : AppCompatActivity() {
     inner class WorkoutSetAdapter : RecyclerView.Adapter<WorkoutSetViewHolder>() {
 
         private var workoutSets = mutableListOf<WorkoutSet>()
+
+        @SuppressWarnings("NotifyDataSetChanged")
+        fun addWorkoutSetToList(workoutSet: WorkoutSet) {
+            this.workoutSets.add(workoutSet)
+            notifyDataSetChanged()
+        }
 
         @SuppressWarnings("NotifyDataSetChanged")
         fun setWorkoutSetsList(workoutSets: List<WorkoutSet>) {
@@ -88,6 +106,7 @@ class MainActivity : AppCompatActivity() {
                 logd("Pressed on card view for position $position")
                 val intent = Intent(this@MainActivity, WorkoutExerciseActivity::class.java)
                 intent.putExtra(MAIN_ACTIVITY_WORKOUT_SET_ID, position)
+                intent.putExtra(MAIN_ACTIVITY_CREATE_WORKOUT, false)
 
                 detailsWorkoutSetLauncher.launch(intent)
             }

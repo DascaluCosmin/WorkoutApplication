@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.recyclerview.widget.RecyclerView
@@ -13,15 +14,17 @@ import com.example.laborator2_ma.databinding.WorkoutExerciseBinding
 import com.example.laborator2_ma.dependencyinjection.ApplicationContainer
 import com.example.laborator2_ma.domain.WorkoutExercise
 import com.example.laborator2_ma.domain.WorkoutExerciseType
-import com.example.laborator2_ma.repository.WorkoutExerciseRepository
+import com.example.laborator2_ma.domain.WorkoutSet
 import com.example.laborator2_ma.utils.logd
+import com.example.laborator2_ma.utils.toast
+import java.time.LocalDate
 
 
 class WorkoutExerciseActivity : AppCompatActivity() {
 
     private lateinit var binding: WorkoutExerciseActivityBinding
     private val adapter = ExerciseWorkoutAdapter()
-    private lateinit var workoutExercisesForSet: ArrayList<WorkoutExercise>
+    private var workoutExercisesForSet: ArrayList<WorkoutExercise> = ArrayList()
     private var currentWorkoutSetId: Int = 0
 
     private val addWorkoutExerciseLauncher = registerForActivityResult(StartActivityForResult()) { result ->
@@ -87,20 +90,48 @@ class WorkoutExerciseActivity : AppCompatActivity() {
 
         val bundle: Bundle? = intent.extras
         if (bundle != null) {
-            currentWorkoutSetId = bundle.getInt(MainActivity.MAIN_ACTIVITY_WORKOUT_SET_ID)
-            workoutExercisesForSet = ApplicationContainer.workoutSetRepository.findOne(currentWorkoutSetId).exercises
+            val isNewWorkout = bundle.getBoolean(MainActivity.MAIN_ACTIVITY_CREATE_WORKOUT)
+            if (!isNewWorkout) {
+                currentWorkoutSetId = bundle.getInt(MainActivity.MAIN_ACTIVITY_WORKOUT_SET_ID)
+                val currentWorkoutSet: WorkoutSet = ApplicationContainer.workoutSetRepository.findOne(currentWorkoutSetId)
+                workoutExercisesForSet = currentWorkoutSet.exercises
+
+                binding.workoutSetNameEditText.setText(currentWorkoutSet.name)
+                binding.workoutSetNameEditText.keyListener = null
+                binding.buttonAddSetWorkout.visibility = View.INVISIBLE
+
+                binding.workoutExercises.adapter = adapter
+                adapter.setWorkoutExercisesList(workoutExercisesForSet)
+            } else {
+                binding.buttonAddExerciseWorkout.visibility = View.INVISIBLE
+            }
         }
 
-        binding.addButton.setOnClickListener {
-            logd("Pressed the add button")
+        binding.buttonAddExerciseWorkout.setOnClickListener {
+            logd("Pressed the add workout exercise button")
 
             val intent = Intent(this, AddExerciseWorkoutActivity::class.java)
             intent.putExtra(MainActivity.MAIN_ACTIVITY_WORKOUT_SET_ID, currentWorkoutSetId)
             addWorkoutExerciseLauncher.launch(intent)
         }
 
-        binding.workoutExercises.adapter = adapter
-        adapter.setWorkoutExercisesList(workoutExercisesForSet)
+        binding.buttonAddSetWorkout.setOnClickListener {
+            logd("Pressed the add workout set button")
+            val workoutName = binding.workoutSetNameEditText.text.toString()
+            if (workoutName.isNotEmpty()) {
+                val createdAt = LocalDate.now()
+                val id = ApplicationContainer.workoutSetRepository.add(WorkoutSet(workoutName, createdAt, ArrayList()))
+
+                val response = Intent()
+                response.putExtra(MainActivity.MAIN_ACTIVITY_WORKOUT_SET_ID, id)
+                response.putExtra(MainActivity.MAIN_ACTIVITY_WORKOUT_SET_NAME, workoutName)
+                response.putExtra(MainActivity.MAIN_ACTIVITY_WORKOUT_SET_DATE, createdAt.toString())
+                setResult(Activity.RESULT_OK, response)
+                finish()
+            } else {
+                toast("Please introduce a workout name")
+            }
+        }
     }
 
     inner class ExerciseWorkoutAdapter : RecyclerView.Adapter<ExerciseWorkoutViewHolder>() {
