@@ -6,156 +6,97 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import com.example.laborator2_ma.databinding.ActivityMainBinding
-import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.RecyclerView
-import com.example.laborator2_ma.databinding.WorkoutExerciseBinding
+import com.example.laborator2_ma.databinding.ActivityMainBinding
+import com.example.laborator2_ma.databinding.WorkoutSetBinding
 import com.example.laborator2_ma.dependencyinjection.ApplicationContainer
-import com.example.laborator2_ma.domain.WorkoutExercise
-import com.example.laborator2_ma.domain.WorkoutExerciseType
-import com.example.laborator2_ma.repository.WorkoutExerciseRepository
+import com.example.laborator2_ma.domain.WorkoutSet
 import com.example.laborator2_ma.utils.logd
-
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding
-    private val applicationContainer = ApplicationContainer()
-    private val adapter = ExerciseWorkoutAdapter()
-    private val workoutExerciseRepository: WorkoutExerciseRepository = applicationContainer.getSingletonWorkoutExerciseRepository()!!
+    companion object {
+        const val MAIN_ACTIVITY_WORKOUT_SET_ID = "id"
+    }
 
-    private val addWorkoutExerciseLauncher = registerForActivityResult(StartActivityForResult()) { result ->
-        logd("Add WorkoutExercise response: ${result.resultCode}")
+    private lateinit var binding: ActivityMainBinding
+    private val adapter = WorkoutSetAdapter()
+
+    private val addWorkoutSetLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        logd("Add WorkoutSet response: ${result.resultCode}")
         if (result.resultCode == Activity.RESULT_OK) {
             val intent = result.data
             if (intent != null) {
                 val intentBundle = intent.extras
                 if (intentBundle != null) {
-                    val id = intentBundle.getInt(AddExerciseWorkoutActivity.EXERCISE_ACTIVITY_ID)
-                    var name = intentBundle.getString(AddExerciseWorkoutActivity.EXERCISE_ACTIVITY_NAME)
-                    if (name == null) {
-                        name = "Unknown name"
-                    }
 
-                    val numberOfSets = intentBundle.getInt(AddExerciseWorkoutActivity.EXERCISE_ACTIVITY_NUMBER_OF_SETS)
-                    val numberOfReps = intentBundle.getInt(AddExerciseWorkoutActivity.EXERCISE_ACTIVITY_NUMBER_OF_REPS)
-                    val weight = intentBundle.getFloat(AddExerciseWorkoutActivity.EXERCISE_ACTIVITY_WEIGHT)
-
-                    val exerciseTypeString = intentBundle.getString(AddExerciseWorkoutActivity.EXERCISE_ACTIVITY_TYPE)
-                    val exerciseType: WorkoutExerciseType = if (exerciseTypeString == null) WorkoutExerciseType.OTHER
-                        else enumValueOf(exerciseTypeString)
-
-                    adapter.addWorkoutExerciseToList(WorkoutExercise(id, name, numberOfSets, numberOfReps, weight, exerciseType))
                 }
             }
         }
     }
 
-    private val modifyWorkoutExerciseLauncher = registerForActivityResult(StartActivityForResult()) { result ->
-        logd("Modify WorkoutExercise response: ${result.resultCode}")
-        if (result.resultCode == Activity.RESULT_OK) {
-            val intent = result.data
-            if (intent != null) {
-                val intentBundle = intent.extras
-                if (intentBundle != null) {
-                    val position = intentBundle.getInt(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_POSITION)
-                    val id = intentBundle.getInt(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_ID)
-                    var name = intentBundle.getString(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_NAME)
-                    if (name == null) {
-                        name = "Unknown name"
-                    }
-
-                    val numberOfSets = intentBundle.getInt(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_NUMBER_OF_SETS)
-                    val numberOfReps = intentBundle.getInt(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_NUMBER_OF_REPS)
-                    val weight = intentBundle.getFloat(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_WEIGHT)
-
-                    val exerciseTypeString = intentBundle.getString(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_TYPE)
-                    val exerciseType: WorkoutExerciseType = if (exerciseTypeString == null) WorkoutExerciseType.OTHER
-                        else enumValueOf(exerciseTypeString)
-
-                    adapter.modifyWorkoutExerciseInList(WorkoutExercise(id, name, numberOfReps, numberOfSets, weight, exerciseType), position)
-                }
-            }
-        }
+    private val detailsWorkoutSetLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        logd("Back to all workout sets: ${result.resultCode}")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.addButton.setOnClickListener {
-            logd("Pressed the add button")
-            val intent = Intent(this, AddExerciseWorkoutActivity::class.java)
-            addWorkoutExerciseLauncher.launch(intent)
+        binding.buttonAddWorkoutSet.setOnClickListener {
+            val intent = Intent(this, WorkoutExerciseActivity::class.java)
+            addWorkoutSetLauncher.launch(intent)
         }
 
-        binding.workoutExercises.adapter = adapter
-        adapter.setWorkoutExercisesList(workoutExerciseRepository.findAll())
+        binding.workoutSets.adapter = adapter
+        adapter.setWorkoutSetsList(ApplicationContainer.workoutSetRepository.findAll())
     }
 
-    inner class ExerciseWorkoutAdapter : RecyclerView.Adapter<ExerciseWorkoutViewHolder>() {
+    inner class WorkoutSetAdapter : RecyclerView.Adapter<WorkoutSetViewHolder>() {
 
-        private var workoutExercises = mutableListOf<WorkoutExercise>()
+        private var workoutSets = mutableListOf<WorkoutSet>()
 
         @SuppressWarnings("NotifyDataSetChanged")
-        fun setWorkoutExercisesList(workoutExercises: List<WorkoutExercise>) {
-            this.workoutExercises = workoutExercises.toMutableList()
+        fun setWorkoutSetsList(workoutSets: List<WorkoutSet>) {
+            this.workoutSets = workoutSets.toMutableList()
             notifyDataSetChanged()
         }
 
-        @SuppressWarnings("NotifyDataSetChanged")
-        fun addWorkoutExerciseToList(workoutExercise: WorkoutExercise) {
-            this.workoutExercises.add(workoutExercise)
-            notifyDataSetChanged()
-        }
-
-        @SuppressWarnings("NotifyDataSetChanged")
-        fun modifyWorkoutExerciseInList(workoutExercise: WorkoutExercise, position: Int) {
-            this.workoutExercises[position] = workoutExercise
-            notifyDataSetChanged()
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ExerciseWorkoutViewHolder {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WorkoutSetViewHolder {
             val inflater = LayoutInflater.from(parent.context)
-            val binding = WorkoutExerciseBinding.inflate(inflater, parent, false)
-            return ExerciseWorkoutViewHolder(binding)
+            val binding = WorkoutSetBinding.inflate(inflater, parent,false)
+            return WorkoutSetViewHolder(binding)
         }
 
         @SuppressWarnings("NotifyDataSetChanged")
-        override fun onBindViewHolder(holder: ExerciseWorkoutViewHolder, position: Int) {
-            val workoutExercise = workoutExercises[position]
-            logd("Workout Exercise's ID = ${workoutExercise.id}")
+        override fun onBindViewHolder(holder: WorkoutSetViewHolder, position: Int) {
+            val workoutSet = workoutSets[position]
+            logd("Workout Set's ID = ${workoutSet.id}")
 
-            holder.binding.workoutExerciseName.text = workoutExercise.name
-            holder.binding.workoutExerciseNumberOfSets.text = workoutExercise.numberOfSets.toString()
-            holder.binding.exerciseWorkoutNumberOfReps.text = workoutExercise.numberOfReps.toString()
-            holder.binding.workoutExerciseWeight.text = workoutExercise.weight.toString()
-            holder.binding.exerciseWorkoutType.text = workoutExercise.exerciseType.toString()
-            holder.binding.deleteButton.setOnClickListener {
-                logd("Pressed on deleted for $position")
-                workoutExercises.removeAt(position)
-                workoutExerciseRepository.remove(position)
+            holder.binding.workoutSetName.text = workoutSet.name
+            holder.binding.workoutSetDate.text = workoutSet.createdAt.toString()
+            holder.binding.workoutSetDeleteButton.setOnClickListener {
+                logd("Pressed on delete for position $position")
+                workoutSets.removeAt(position)
+                ApplicationContainer.workoutSetRepository.remove(position)
                 notifyDataSetChanged()
             }
-            holder.binding.modifyButton.setOnClickListener {
-                logd("Pressed on modify for $position")
-                val intent = Intent(this@MainActivity, ModifyExerciseWorkoutActivity::class.java)
-                intent.putExtra(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_POSITION, position)
-                intent.putExtra(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_ID, workoutExercise.id)
-                intent.putExtra(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_NAME, workoutExercise.name)
-                intent.putExtra(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_NUMBER_OF_SETS, workoutExercise.numberOfSets)
-                intent.putExtra(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_NUMBER_OF_REPS, workoutExercise.numberOfReps)
-                intent.putExtra(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_WEIGHT, workoutExercise.weight)
-                intent.putExtra(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_TYPE, workoutExercise.exerciseType.toString())
-                modifyWorkoutExerciseLauncher.launch(intent)
+            holder.binding.workoutSetCardView.setOnClickListener {
+                logd("Pressed on card view for position $position")
+                val intent = Intent(this@MainActivity, WorkoutExerciseActivity::class.java)
+                intent.putExtra(MAIN_ACTIVITY_WORKOUT_SET_ID, position)
+
+                detailsWorkoutSetLauncher.launch(intent)
             }
         }
 
         override fun getItemCount(): Int {
-            return workoutExercises.size
+            return workoutSets.size
         }
     }
 
-    inner class ExerciseWorkoutViewHolder(val binding: WorkoutExerciseBinding) : RecyclerView.ViewHolder(binding.root)
+    inner class WorkoutSetViewHolder(val binding: WorkoutSetBinding): RecyclerView.ViewHolder(binding.root)
 }

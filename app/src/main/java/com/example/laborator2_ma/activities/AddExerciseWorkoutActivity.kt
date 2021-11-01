@@ -8,13 +8,9 @@ import com.example.laborator2_ma.databinding.AddActivityBinding
 import com.example.laborator2_ma.dependencyinjection.ApplicationContainer
 import com.example.laborator2_ma.domain.WorkoutExercise
 import com.example.laborator2_ma.domain.WorkoutExerciseType
-import com.example.laborator2_ma.repository.WorkoutExerciseRepository
 import com.example.laborator2_ma.utils.toast
 
 class AddExerciseWorkoutActivity : AppCompatActivity() {
-
-    private val applicationContainer = ApplicationContainer()
-    private val workoutExerciseRepository: WorkoutExerciseRepository = applicationContainer.getSingletonWorkoutExerciseRepository()!!
 
     companion object {
         const val EXERCISE_ACTIVITY_ID = "Id"
@@ -30,6 +26,14 @@ class AddExerciseWorkoutActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        val bundle: Bundle? = intent.extras
+        var workoutSetId: Int
+        var workoutSetExercises = ArrayList<WorkoutExercise>()
+        if (bundle != null) {
+            workoutSetId = bundle.getInt(MainActivity.MAIN_ACTIVITY_WORKOUT_SET_ID)
+            workoutSetExercises = ApplicationContainer.workoutSetRepository.findOne(workoutSetId).exercises
+        }
+
         binding = AddActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -44,7 +48,9 @@ class AddExerciseWorkoutActivity : AppCompatActivity() {
             val exerciseType = enumValueOf<WorkoutExerciseType>(binding.addWorkoutExerciseTypeEditText.text.toString().uppercase())
 
             val workoutExercise = WorkoutExercise(name, numberOfReps, numberOfSets, weight, exerciseType)
-            workoutExercise.id = workoutExerciseRepository.add(workoutExercise)
+
+            workoutSetExercises.add(workoutExercise)
+            workoutExercise.id = workoutSetExercises.size - 1
 
             val response = Intent()
             response.putExtra(ModifyExerciseWorkoutActivity.EXERCISE_ACTIVITY_ID, workoutExercise.id)

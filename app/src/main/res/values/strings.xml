@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">WorkoutApp</string>
+    <string name="mainActivityTitle">Your Workouts</string>
     <string name="workoutSetName">Leg day (intensive)</string>
+    <string name="workoutSetDate">11.10.2021</string>
+    <string name="workoutSetDateLabel">Created on:</string>
     <string name="addButtonText">Add</string>
     <string name="modifyButtonText">Modify</string>
     <string name="workoutExerciseName">Leg Extension Curl</string>

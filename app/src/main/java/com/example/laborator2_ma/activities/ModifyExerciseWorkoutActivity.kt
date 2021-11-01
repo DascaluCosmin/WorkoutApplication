@@ -15,9 +15,6 @@ import com.example.laborator2_ma.utils.toast
 
 class ModifyExerciseWorkoutActivity : AppCompatActivity() {
 
-    private val applicationContainer = ApplicationContainer()
-    private val workoutExerciseRepository: WorkoutExerciseRepository = applicationContainer.getSingletonWorkoutExerciseRepository()!!
-
     companion object {
         const val EXERCISE_ACTIVITY_POSITION = "Position"
         const val EXERCISE_ACTIVITY_ID = "Id"
@@ -36,8 +33,11 @@ class ModifyExerciseWorkoutActivity : AppCompatActivity() {
 
         val bundle: Bundle? = intent.extras
         var id: Int = -1
-        var position: Int = 0
+        var position = 0
+        var workoutSetId: Int
+        var workoutSetExercises = ArrayList<WorkoutExercise>()
         if (bundle != null) {
+            logd("Workout ID ${bundle.getInt(MainActivity.MAIN_ACTIVITY_WORKOUT_SET_ID)}")
             logd("Position: ${bundle.getInt(EXERCISE_ACTIVITY_POSITION)}")
             logd("Id: ${bundle.getInt(EXERCISE_ACTIVITY_ID)}")
             logd("Name: ${bundle.getString(EXERCISE_ACTIVITY_NAME)}")
@@ -48,6 +48,8 @@ class ModifyExerciseWorkoutActivity : AppCompatActivity() {
 
             position = bundle.getInt(EXERCISE_ACTIVITY_POSITION)
             id = bundle.getInt(EXERCISE_ACTIVITY_ID)
+            workoutSetId = bundle.getInt(MainActivity.MAIN_ACTIVITY_WORKOUT_SET_ID)
+            workoutSetExercises = ApplicationContainer.workoutSetRepository.findOne(workoutSetId).exercises
 
             binding.editTextName.setText(bundle.getString(EXERCISE_ACTIVITY_NAME))
             binding.editTextNumberOfSets.setText(bundle.getInt(EXERCISE_ACTIVITY_NUMBER_OF_SETS).toString())
@@ -65,19 +67,7 @@ class ModifyExerciseWorkoutActivity : AppCompatActivity() {
             val exerciseType = enumValueOf<WorkoutExerciseType>(binding.editTextExerciseType.text.toString().uppercase())
 
             val workoutExercise = WorkoutExercise(id, name, numberOfReps, numberOfSets, weight, exerciseType)
-
-            logd("Before")
-            workoutExerciseRepository.findAll().forEach {
-                logd("Id: ${it.id}, Name: ${it.name}, Sets: ${it.numberOfSets}, " +
-                        "Reps: ${it.numberOfReps}, Weight: ${it.weight}, Type: ${it.exerciseType}")
-            }
-            workoutExerciseRepository.modify(workoutExercise, position)
-
-            logd("After")
-            workoutExerciseRepository.findAll().forEach {
-                logd("Id: ${it.id}, Name: ${it.name}, Sets: ${it.numberOfSets}, " +
-                        "Reps: ${it.numberOfReps}, Weight: ${it.weight}, Type: ${it.exerciseType}")
-            }
+            workoutSetExercises[position] = workoutExercise
 
             val response = Intent()
             response.putExtra(EXERCISE_ACTIVITY_POSITION, position)

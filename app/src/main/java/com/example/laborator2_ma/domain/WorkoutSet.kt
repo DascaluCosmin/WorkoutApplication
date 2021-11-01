@@ -3,8 +3,10 @@ package com.example.laborator2_ma.domain
 import java.time.LocalDate
 
 data class WorkoutSet(
-    private var id: Int,
-    private var name: String,
-    private var createdAt: LocalDate,
-    private var exercises: List<WorkoutExercise>
-)
+    var id: Int,
+    var name: String,
+    var createdAt: LocalDate,
+    var exercises: ArrayList<WorkoutExercise>
+) {
+    constructor(name: String, createdAt: LocalDate, exercises: ArrayList<WorkoutExercise>): this(0, name, createdAt, exercises)
+}

@@ -2,6 +2,8 @@ package com.example.laborator2_ma.dependencyinjection
 
 import com.example.laborator2_ma.repository.WorkoutExerciseRepository
 import com.example.laborator2_ma.repository.WorkoutExerciseRepositoryInMemory
+import com.example.laborator2_ma.repository.WorkoutSetRepository
+import com.example.laborator2_ma.repository.WorkoutSetRepositoryInMemory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,7 +15,8 @@ import javax.inject.Singleton
 class ApplicationContainer {
 
     companion object {
-        private var workoutExerciseRepository: WorkoutExerciseRepository? = null
+        var workoutExerciseRepository: WorkoutExerciseRepository? = null // TODO: Change this
+        var workoutSetRepository: WorkoutSetRepository = WorkoutSetRepositoryInMemory()
     }
 
     fun getSingletonWorkoutExerciseRepository(): WorkoutExerciseRepository? {
