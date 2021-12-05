@@ -1,22 +1,24 @@
 package com.example.laborator2_ma.activities
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.laborator2_ma.databinding.ActivityMainBinding
 import com.example.laborator2_ma.databinding.WorkoutSetBinding
 import com.example.laborator2_ma.dependencyinjection.ApplicationContainer
+import com.example.laborator2_ma.dialogs.DeleteDialogFragment
 import com.example.laborator2_ma.domain.WorkoutSet
 import com.example.laborator2_ma.utils.logd
 import com.example.laborator2_ma.utils.toast
 import java.time.LocalDate
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), DeleteDialogFragment.DeleteDialogListener {
 
     companion object {
         const val MAIN_ACTIVITY_WORKOUT_SET_ID = "id"
@@ -70,7 +72,8 @@ class MainActivity : AppCompatActivity() {
 
     inner class WorkoutSetAdapter : RecyclerView.Adapter<WorkoutSetViewHolder>() {
 
-        private var workoutSets = mutableListOf<WorkoutSet>()
+        var workoutSets = mutableListOf<WorkoutSet>()
+        var selectedPosition = 0
 
         @SuppressWarnings("NotifyDataSetChanged")
         fun addWorkoutSetToList(workoutSet: WorkoutSet) {
@@ -98,11 +101,8 @@ class MainActivity : AppCompatActivity() {
             holder.binding.workoutSetName.text = workoutSet.name
             holder.binding.workoutSetDate.text = workoutSet.createdAt.toString()
             holder.binding.workoutSetDeleteButton.setOnClickListener {
-                logd("Pressed on delete for position $position")
-                workoutSets.removeAt(position)
-                ApplicationContainer.workoutSetRepository.remove(position)
-                notifyDataSetChanged()
-                toast("Workout Set deleted successfully")
+                selectedPosition = position
+                DeleteDialogFragment().show(supportFragmentManager, "")
             }
             holder.binding.workoutSetCardView.setOnClickListener {
                 logd("Pressed on card view for position $position")
@@ -120,4 +120,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     inner class WorkoutSetViewHolder(val binding: WorkoutSetBinding): RecyclerView.ViewHolder(binding.root)
+
+    @SuppressLint("NotifyDataSetChanged")
+    override fun apply(toDelete: Boolean) {
+        if (toDelete) {
+            adapter.workoutSets.removeAt(adapter.selectedPosition)
+            ApplicationContainer.workoutSetRepository.remove(adapter.selectedPosition)
+            adapter.notifyDataSetChanged()
+            toast("Workout Set deleted successfully")
+        }
+    }
 }

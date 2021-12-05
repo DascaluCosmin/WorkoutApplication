@@ -21,4 +21,7 @@
     <string name="exerciseNumberOfRepsLabel">Number of reps</string>
     <string name="exerciseWeightLabel">Weight</string>
     <string name="exerciseTypeLabel">Type</string>
+    <string name="deleteDialogTitle">Are you sure you want delete this record?</string>
+    <string name="positiveAnswer">Yes</string>
+    <string name="negativeAnswer">No</string>
 </resources>
