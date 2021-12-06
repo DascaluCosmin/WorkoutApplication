@@ -1,58 +1,32 @@
 package com.example.laborator2_ma.activities
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.example.laborator2_ma.databinding.ActivityMainBinding
 import com.example.laborator2_ma.databinding.WorkoutSetBinding
-import com.example.laborator2_ma.dependencyinjection.ApplicationContainer
 import com.example.laborator2_ma.dialogs.DeleteDialogFragment
 import com.example.laborator2_ma.domain.WorkoutSet
-import com.example.laborator2_ma.utils.logd
 import com.example.laborator2_ma.utils.toast
-import java.time.LocalDate
+import com.example.laborator2_ma.viewmodels.WorkoutViewModel
 
 class MainActivity : AppCompatActivity(), DeleteDialogFragment.DeleteDialogListener {
 
     companion object {
         const val MAIN_ACTIVITY_WORKOUT_SET_ID = "id"
         const val MAIN_ACTIVITY_WORKOUT_SET_NAME = "name"
-        const val MAIN_ACTIVITY_WORKOUT_SET_DATE = "date"
         const val MAIN_ACTIVITY_CREATE_WORKOUT = "Create Workout"
     }
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var workoutViewModel: WorkoutViewModel
+
     private val adapter = WorkoutSetAdapter()
-
-    private val addWorkoutSetLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        logd("Add WorkoutSet response: ${result.resultCode}")
-        if (result.resultCode == Activity.RESULT_OK) {
-            val intent = result.data
-            if (intent != null) {
-                val intentBundle = intent.extras
-                if (intentBundle != null) {
-                    val id = intentBundle.getInt(MAIN_ACTIVITY_WORKOUT_SET_ID)
-                    var name = intentBundle.getString(MAIN_ACTIVITY_WORKOUT_SET_NAME)
-                    if (name == null) {
-                        name = "Unknown name"
-                    }
-                    val createdAt = LocalDate.parse(intentBundle.getString(MAIN_ACTIVITY_WORKOUT_SET_DATE))
-
-                    adapter.addWorkoutSetToList(WorkoutSet(id, name, createdAt, ArrayList()))
-                }
-            }
-        }
-    }
-
-    private val detailsWorkoutSetLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        logd("Back to all workout sets: ${result.resultCode}")
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,23 +37,22 @@ class MainActivity : AppCompatActivity(), DeleteDialogFragment.DeleteDialogListe
         binding.buttonAddWorkoutSet.setOnClickListener {
             val intent = Intent(this, WorkoutExerciseActivity::class.java)
             intent.putExtra(MAIN_ACTIVITY_CREATE_WORKOUT, true)
-            addWorkoutSetLauncher.launch(intent)
+            startActivity(intent)
         }
-
         binding.workoutSets.adapter = adapter
-        adapter.setWorkoutSetsList(ApplicationContainer.workoutSetRepository.findAll())
+
+        workoutViewModel = ViewModelProvider(this).get(WorkoutViewModel::class.java)
+        workoutViewModel.workoutSets.observe(this, {
+            it?.let {
+                adapter.setWorkoutSetsList(it)
+            }
+        })
     }
 
     inner class WorkoutSetAdapter : RecyclerView.Adapter<WorkoutSetViewHolder>() {
-
         var workoutSets = mutableListOf<WorkoutSet>()
-        var selectedPosition = 0
 
-        @SuppressWarnings("NotifyDataSetChanged")
-        fun addWorkoutSetToList(workoutSet: WorkoutSet) {
-            this.workoutSets.add(workoutSet)
-            notifyDataSetChanged()
-        }
+        var selectedWorkoutSetId = 0
 
         @SuppressWarnings("NotifyDataSetChanged")
         fun setWorkoutSetsList(workoutSets: List<WorkoutSet>) {
@@ -89,28 +62,26 @@ class MainActivity : AppCompatActivity(), DeleteDialogFragment.DeleteDialogListe
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WorkoutSetViewHolder {
             val inflater = LayoutInflater.from(parent.context)
-            val binding = WorkoutSetBinding.inflate(inflater, parent,false)
+            val binding = WorkoutSetBinding.inflate(inflater, parent, false)
             return WorkoutSetViewHolder(binding)
         }
 
         @SuppressWarnings("NotifyDataSetChanged")
         override fun onBindViewHolder(holder: WorkoutSetViewHolder, position: Int) {
             val workoutSet = workoutSets[position]
-            logd("Workout Set's ID = ${workoutSet.id}")
-
             holder.binding.workoutSetName.text = workoutSet.name
-            holder.binding.workoutSetDate.text = workoutSet.createdAt.toString()
+            holder.binding.workoutSetDate.text = workoutSet.getFormattedDate()
             holder.binding.workoutSetDeleteButton.setOnClickListener {
-                selectedPosition = position
+                selectedWorkoutSetId = workoutSet.workoutSetId
                 DeleteDialogFragment().show(supportFragmentManager, "")
             }
             holder.binding.workoutSetCardView.setOnClickListener {
-                logd("Pressed on card view for position $position")
                 val intent = Intent(this@MainActivity, WorkoutExerciseActivity::class.java)
-                intent.putExtra(MAIN_ACTIVITY_WORKOUT_SET_ID, position)
+                intent.putExtra(MAIN_ACTIVITY_WORKOUT_SET_ID, workoutSet.workoutSetId)
+                intent.putExtra(MAIN_ACTIVITY_WORKOUT_SET_NAME, workoutSet.name)
                 intent.putExtra(MAIN_ACTIVITY_CREATE_WORKOUT, false)
 
-                detailsWorkoutSetLauncher.launch(intent)
+                startActivity(intent)
             }
         }
 
@@ -119,14 +90,14 @@ class MainActivity : AppCompatActivity(), DeleteDialogFragment.DeleteDialogListe
         }
     }
 
-    inner class WorkoutSetViewHolder(val binding: WorkoutSetBinding): RecyclerView.ViewHolder(binding.root)
+    inner class WorkoutSetViewHolder(val binding: WorkoutSetBinding) :
+        RecyclerView.ViewHolder(binding.root)
 
     @SuppressLint("NotifyDataSetChanged")
     override fun apply(toDelete: Boolean) {
         if (toDelete) {
-            adapter.workoutSets.removeAt(adapter.selectedPosition)
-            ApplicationContainer.workoutSetRepository.remove(adapter.selectedPosition)
-            adapter.notifyDataSetChanged()
+            workoutViewModel.deleteWorkoutExercisesForSet(adapter.selectedWorkoutSetId)
+            workoutViewModel.deleteWorkoutSet(adapter.selectedWorkoutSetId)
             toast("Workout Set deleted successfully")
         }
     }

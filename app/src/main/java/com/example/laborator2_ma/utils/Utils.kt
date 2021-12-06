@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 
-fun Any.logd(message: Any? = "no message!") {
+fun logd(message: Any? = "no message!") {
     Log.d("Main", message.toString())
 }
 
